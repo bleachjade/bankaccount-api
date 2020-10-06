@@ -1,16 +1,22 @@
 package th.ac.ku.bankaccount.controller;
 
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import th.ac.ku.bankaccount.data.BankAccountRepository;
 import th.ac.ku.bankaccount.model.BankAccount;
+import th.ac.ku.bankaccount.model.Money;
 
+import javax.validation.Valid;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/bankaccount")
 public class BankAccountRestController {
 
     private BankAccountRepository repository;
+    boolean error = false;
 
     public BankAccountRestController(BankAccountRepository repository) {
         this.repository = repository;
@@ -55,5 +61,34 @@ public class BankAccountRestController {
         return record;
     }
 
+    @PutMapping("/deposit/{id}")
+    public BankAccount deposit(@PathVariable int id,
+                               @Valid @RequestBody Money money,
+                               BindingResult result,
+                               Model model) {
+        // test if user type negative number
+        if (money.getMoney() <= 0) {
+            System.out.println("Amount to be deposit should be positive");
+        } else {
+            BankAccount record = repository.findById(id).get();
+            record.setBalance(record.getBalance() + money.getMoney());
+            repository.save(record);
+            return record;
+        } return null;
+    }
 
+    @PutMapping("/withdraw/{id}")
+    public BankAccount withdraw(@PathVariable Integer id,
+                                @Valid @RequestBody Money money,
+                                BindingResult result,
+                                Model model) {
+        if (money.getMoney() <= 0) {
+            System.out.println("Amount to be withdraw should be positive");
+        } else {
+            BankAccount record = repository.findById(id).get();
+            record.setBalance(record.getBalance() - money.getMoney());
+            repository.save(record);
+            return record;
+        } return null;
+    }
 }
